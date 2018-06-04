@@ -5,9 +5,6 @@
 
 Come suggerisce il nome, **Pyliad** è un semplice script realizzato in Python che effettua il login sul sito di Iliad e restituisce tutte le informazioni sulla propria linea ed i relativi consumi sia in Italia che all'estero.
 
-**ATTENZIONE:**
-> Al momento non è presente una gestione degli errori, prestate attenzione alle credenziali di accesso!
-
 ## Requisiti
 * requests
 * BeautifulSoap

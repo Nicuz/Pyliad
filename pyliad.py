@@ -12,6 +12,47 @@ patterns = ['Chiamate: <span class="red">(.*)</span><br/>', '<div class="conso__
 consumi_italia = []
 consumi_estero = []
 
+def info_linea():
+    print "\nINFORMAZIONI SULLA LINEA"
+    #Nome e cognome
+    print "Intestatario:",re.compile(r'<div class=\"bold\">(.*)</div>').search(str(html)).group(1)
+    #ID utente
+    print "ID utente:",re.compile(r'ID utente: (\d+.\d+)').search(html.text).group(1)
+    #Numero associato alla SIM Iliad
+    print "Numero:",re.compile(r'Numero: (\d+.\d+)').search(html.text).group(1)
+    #Credito residuo
+    print "\nCREDITO RESIDUO\n",re.compile(r'- Credito : <b class="red">(\d.+.(.|,)?)</b>').search(str(html)).group(1)
+
+def consumi():
+    '''
+    Indici:
+    0 - Chiamate
+    1 - SMS
+    2 - MMS
+    3 - Dati
+    '''
+    for x in range(0,len(labels)):
+        if x == 3:
+            consumi_italia.append(re.findall(re.compile(patterns[x]), str(html))[0][0])
+            consumi_estero.append(re.findall(re.compile(patterns[x]), str(html))[1][0])
+            break
+        consumi_italia.append(re.findall(re.compile(patterns[x]), str(html))[0])
+        consumi_estero.append(re.findall(re.compile(patterns[x]), str(html))[1])
+
+    print "\nCONSUMI IN ITALIA:"
+    for x in range(0,len(labels)):
+        if x == len(labels)-1:
+            print labels[x],consumi_italia[x],"/",re.findall(re.compile(patterns[3]), str(html))[0][1]
+            break
+        print labels[x],consumi_italia[x]
+
+    print "\nCONSUMI ALL'ESTERO:"
+    for x in range(0,len(labels)):
+        if x == len(labels)-1:
+            print labels[x],consumi_estero[x],"/",re.findall(re.compile(patterns[3]), str(html))[1][1],"\n"
+            break
+        print labels[x],consumi_estero[x]
+
 with requests.session() as s:
     # fetch the login page
     s.get(login_url)
@@ -20,38 +61,8 @@ with requests.session() as s:
     response = s.post(login_url, data=login_info)
     html = BeautifulSoup(response.content, "html.parser")
 
-print "\nINFORMAZIONI SULLA LINEA"
-#Nome e cognome
-print "Intestatario:",re.compile(r'<div class=\"bold\">(.*)</div>').search(str(html)).group(1)
-#ID utente
-print "ID utente:",re.compile(r'ID utente: (\d+.\d+)').search(html.text).group(1)
-#Numero associato alla SIM Iliad
-print "Numero:",re.compile(r'Numero: (\d+.\d+)').search(html.text).group(1)
-#Credito residuo
-print "\nCREDITO RESIDUO\n",re.compile(r'- Credito : <b class="red">(\d.+.(.|,)?)</b>').search(str(html)).group(1)
-
-consumi_italia.append(re.findall(re.compile(patterns[0]), str(html))[0]) #chiamate
-consumi_italia.append(re.findall(re.compile(patterns[1]), str(html))[0]) #SMS
-consumi_italia.append(re.findall(re.compile(patterns[2]), str(html))[0]) #MMS
-consumi_italia.append(re.findall(re.compile(patterns[3]), str(html))[0][0]) #dati utilizzati
-labels.append(re.findall(re.compile(patterns[3]), str(html))[0][1]) #dati inclusi nella tariffa, indice nell'array = 4
-
-print "\nCONSUMI IN ITALIA:"
-for x in range(0,len(labels)-1):
-    if x == 3:
-        print labels[x],consumi_italia[x],"/",labels[x+1]
-        break
-    print labels[x],consumi_italia[x]
-
-consumi_estero.append(re.findall(re.compile(patterns[0]), str(html))[1]) #chiamate
-consumi_estero.append(re.findall(re.compile(patterns[1]), str(html))[1]) #SMS
-consumi_estero.append(re.findall(re.compile(patterns[2]), str(html))[0]) #MMS
-consumi_estero.append(re.findall(re.compile(patterns[3]), str(html))[1][0]) #dati utilizzati
-labels.append(re.findall(re.compile(patterns[3]), str(html))[1][1]) #dati inclusi nella tariffa, indice nell'array = 5
-
-print "\nCONSUMI ALL'ESTERO:"
-for x in range(0,len(labels)-2):
-    if x == 3:
-        print labels[x],consumi_estero[x],"/",labels[x+2],"\n"
-        break
-    print labels[x],consumi_estero[x]
+if "ID utente o password non corretto." in html.text:
+    print "Errore durante il login. ID utente o password non corretto."
+else:
+    info_linea()
+    consumi()
