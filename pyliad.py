@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 login_url = "https://www.iliad.it/account/"
 login_info = {'login-ident': 'VOSTRO_ID_UTENTE', 'login-pwd': 'VOSTRA_PASSWORD'}
 
-labels = ["Chiamate:", "SMS inviati:", "MMS inviati:", "Dati utilizzati:"]
+labels = ["Chiamate", "SMS inviati", "MMS inviati", "Dati utilizzati"]
 patterns = ['Chiamate: <span class="red">(.*)</span><br/>', '<div class="conso__text"><span class="red">(\d+) SMS</span>', '<span class="red">(\d+) MMS<br/></span>', '<span class="red">(.*)</span> / (.*)<br/>']
 consumi_italia = []
 consumi_estero = []
@@ -15,13 +15,13 @@ consumi_estero = []
 def info_linea():
     print "\nINFORMAZIONI SULLA LINEA"
     #Nome e cognome
-    print "Intestatario:",re.compile(r'<div class=\"bold\">(.*)</div>').search(str(html)).group(1)
+    print "Intestatario: {nome}".format(nome=re.compile(r'<div class=\"bold\">(.*)</div>').search(str(html)).group(1))
     #ID utente
-    print "ID utente:",re.compile(r'ID utente: (\d+.\d+)').search(html.text).group(1)
+    print "ID utente: {id}".format(id=re.compile(r'ID utente: (\d+.\d+)').search(html.text).group(1))
     #Numero associato alla SIM Iliad
-    print "Numero:",re.compile(r'Numero: (\d+.\d+)').search(html.text).group(1)
+    print "Numero: {numero}".format(numero=re.compile(r'Numero: (\d+.\d+)').search(html.text).group(1))
     #Credito residuo
-    print "\nCREDITO RESIDUO\n",re.compile(r'- Credito : <b class="red">(\d.+.(.|,)?)</b>').search(str(html)).group(1)
+    print "\nCREDITO RESIDUO\n{credito}".format(credito=re.compile(r'- Credito : <b class="red">(\d.+.(.|,)?)</b>').search(str(html)).group(1))
 
 def consumi():
     '''
@@ -31,7 +31,7 @@ def consumi():
     2 - MMS
     3 - Dati
     '''
-    for x in range(0,len(labels)):
+    for x in range(len(labels)):
         if x == 3:
             consumi_italia.append(re.findall(re.compile(patterns[x]), str(html))[0][0])
             consumi_estero.append(re.findall(re.compile(patterns[x]), str(html))[1][0])
@@ -40,18 +40,18 @@ def consumi():
         consumi_estero.append(re.findall(re.compile(patterns[x]), str(html))[1])
 
     print "\nCONSUMI IN ITALIA:"
-    for x in range(0,len(labels)):
-        if x == len(labels)-1:
-            print labels[x],consumi_italia[x],"/",re.findall(re.compile(patterns[3]), str(html))[0][1]
+    for x in range(len(labels)):
+        if x == 3:
+            print "{label}: {consumo} / {totale}".format(label=labels[x], consumo=consumi_italia[x], totale=re.findall(re.compile(patterns[3]), str(html))[0][1])
             break
-        print labels[x],consumi_italia[x]
+        print "{label}: {consumo}".format(label=labels[x], consumo=consumi_italia[x])
 
     print "\nCONSUMI ALL'ESTERO:"
-    for x in range(0,len(labels)):
-        if x == len(labels)-1:
-            print labels[x],consumi_estero[x],"/",re.findall(re.compile(patterns[3]), str(html))[1][1],"\n"
+    for x in range(len(labels)):
+        if x == 3:
+            print "{label}: {consumo} / {totale}\n".format(label=labels[x], consumo=consumi_estero[x], totale=re.findall(re.compile(patterns[3]), str(html))[1][1])
             break
-        print labels[x],consumi_estero[x]
+        print "{label}: {consumo}".format(label=labels[x], consumo=consumi_estero[x])
 
 with requests.session() as s:
     # fetch the login page
